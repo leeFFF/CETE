@@ -171,37 +171,91 @@ def calc_precision(testfile, predfile, resfile):
 
 
 def accuracy(testfile, preds):
-    with open(testfile, 'r') as ftest:
-        data = []
-        pred = []
-        sum = 0
+    # with open(testfile, 'r') as ftest:
+    data = []
+    data = testfile
 
-        for p in preds:
-            pred.append(float(p))
-        i = 0
-        for item in ftest:
-            item = item.strip().split('\t')
-            lines = []
-            length = len(item)
-            if (length < 3):
-                lines.append(item[0])
-                lines.append("question")
-                lines.append(item[1])
-            else:
-                lines.append(item[0])
-                lines.append(item[1])
-                lines.append(item[2])
-            val = pred[i]
-            i = i + 1
-            if float(lines[2]) == 1:
-                if (val > 0.50):
-                    sum += 1
-            else:
-                if (val <= 0.50):
-                    sum += 1
-        # print(sum)
-        # print(i)
-        return float(sum / float(i))
+    pred = []
+    for p in preds:
+        pred.append(float(p))
+
+    sum = 0
+    i = 0
+
+    filename = open("acc.txt", "w+")
+    for item in zip(data, pred):
+        filename.write(str(item)+"\n")  # 直接把文件写入string，后面就是计算的部分了
+
+    # for item in ftest:
+    #
+    #     count += 1
+    #     if count == 1:
+    #         continue
+    #
+    #     item = item.strip().split('\t')
+    #     lines = []
+    #     length = len(item)
+    #     if (length < 3):
+    #         lines.append(item[0])
+    #         lines.append("question")
+    #         lines.append(item[1])
+    #     else:
+    #         lines.append(item[0])
+    #         lines.append(item[1])
+    #         lines.append(item[2])
+        lines = item[0]
+        val = pred[i]
+        i = i + 1
+        if float(lines[2]) == 1:
+            if (val > 0.50):
+                sum += 1
+        else:
+            if (val <= 0.50):
+                sum += 1
+    # print(sum)
+    # print(i)
+    return float(sum / float(i))
+
+
+# def accuracy(testfile, preds):
+#     with open(testfile, 'r') as ftest:
+#         data = []
+#         pred = []
+#         sum = 0
+#
+#
+#         for p in preds:
+#             pred.append(float(p))
+#
+#         i = 0
+#         for item in ftest:
+#
+#             count += 1
+#             if count == 1:
+#                 continue
+#
+#             item = item.strip().split('\t')
+#             lines = []
+#             length = len(item)
+#             if (length < 3):
+#                 lines.append(item[0])
+#                 lines.append("question")
+#                 lines.append(item[1])
+#             else:
+#                 lines.append(item[0])
+#                 lines.append(item[1])
+#                 lines.append(item[2])
+#             val = pred[i]
+#             i = i + 1
+#             if float(lines[2]) == 1:
+#                 if (val > 0.50):
+#                     sum += 1
+#             else:
+#                 if (val <= 0.50):
+#                     sum += 1
+#         # print(sum)
+#         # print(i)
+#         return float(sum / float(i))
 
 
 def calc_map1(testfile, preds):
@@ -210,9 +264,9 @@ def calc_map1(testfile, preds):
     pred = []
     # for line in ftest:
     #    data.append(line.strip().split('\t'))
-    data = testfile
+    data = testfile  # 包含文件各行的一个list，每行是一个list，每个list里面包含两个问题一个label
     #print("ERROR VALUES")
-    for p in preds:
+    for p in preds:  # 转化为float的list
         #print(p)
         pred.append(float(p))
     oneq = []
@@ -221,7 +275,7 @@ def calc_map1(testfile, preds):
     excnt = 0
     filename = open("string.txt", "w+")
     for item in zip(data, pred):
-        filename.write(str(item)+"\n")
+        filename.write(str(item)+"\n")  # 直接把文件写入string，后面就是计算的部分了
         if item[0][0] == pre or pre == "BEGIN":
             oneq.append(item)
         else:

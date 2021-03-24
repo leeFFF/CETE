@@ -22,7 +22,7 @@ import glob
 import logging
 import os
 import random
-from imap_qa import calc_map1, calc_mrr1, read_data
+from imap_qa import calc_map1, calc_mrr1, read_data, accuracy
 import numpy as np
 import torch
 from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
@@ -245,15 +245,15 @@ def evaluate(args, model, tokenizer, prefix=""):
         eval_loss = eval_loss / nb_eval_steps
         if args.output_mode == "classification":
             # print(preds)
-            f = open("out1.txt", "w+")
+            f = open("out1.txt", "w+")  # 存预测的概率分布
             for i in preds:
                 f.write(str(i) + " \n")
             preds2 = preds[:, 1:]
             preds = np.argmax(preds, axis=1)
 
-            ff = open("out2.txt", "w+")
-            fff = open("out3.txt", "w+")
-            ffff = open("out4.txt", "w+")
+            ff = open("out2.txt", "w+")  # 存预测的label
+            fff = open("out3.txt", "w+")  # 存预测为1的概率
+            ffff = open("out4.txt", "w+")  # 存真实的label
             for i in preds:
                 ff.write(str(i) + " \n")
             for i in preds2:
@@ -270,7 +270,6 @@ def evaluate(args, model, tokenizer, prefix=""):
         print(args.task_name)
 
         '''
-
         result = compute_metrics(eval_task, preds, out_label_ids)
         results.update(result)
 
@@ -489,6 +488,7 @@ def main():
     logger.info("Training/evaluation parameters %s", args)
 
     # Training
+
     if args.do_train:
         train_dataset = load_and_cache_examples(args, args.task_name, tokenizer, evaluate=False)
         global_step, tr_loss = train(args, train_dataset, model, tokenizer)
@@ -543,8 +543,11 @@ def main():
         filename = args.data_dir + "/" + args.task_name + "_test.tsv"
     t_f = read_data(filename=filename)
 
+    acc = accuracy(t_f, preds)  # my code
     map_val = calc_map1(t_f, preds)
     mrr_val = calc_mrr1(t_f, preds)
+
+    print("ACC: " + str(acc))  # my code
     print("MAP: " + str(map_val))
     print("MRR: " + str(mrr_val))
     return results
