@@ -218,8 +218,11 @@ def evaluate(args, model, tokenizer, prefix=""):
         logger.info("  Batch size = %d", args.eval_batch_size)
         eval_loss = 0.0
         nb_eval_steps = 0
+        
         preds = None
         out_label_ids = None
+        out_attention = None
+        
         for batch in tqdm(eval_dataloader, desc="Evaluating"):
             model.eval()
             batch = tuple(t.to(args.device) for t in batch)
@@ -235,14 +238,21 @@ def evaluate(args, model, tokenizer, prefix=""):
 
                 eval_loss += tmp_eval_loss.mean().item()
             nb_eval_steps += 1
+            
+            val_attention = outputs.attentions[-1]
             if preds is None:
                 preds = logits.detach().cpu().numpy()
                 out_label_ids = inputs['labels'].detach().cpu().numpy()
+                out_attention = val_attention.detach().cpu().numpy()
             else:
                 preds = np.append(preds, logits.detach().cpu().numpy(), axis=0)
                 out_label_ids = np.append(out_label_ids, inputs['labels'].detach().cpu().numpy(), axis=0)
-
+                out_attention = np.append(out_attention, val_attention.detach().cpu().numpy(), axis=0)
+        
         eval_loss = eval_loss / nb_eval_steps
+        
+        # save data
+        np.save('out_attention.npy', out_attention)  # save attention
         if args.output_mode == "classification":
             # print(preds)
             f = open("out1.txt", "w+")  # 存预测的概率分布
@@ -474,6 +484,7 @@ def main():
     args.model_type = args.model_type.lower()
     config_class, model_class, tokenizer_class = MODEL_CLASSES[args.model_type]
     config = config_class.from_pretrained(args.config_name if args.config_name else args.model_name_or_path,
+                                          output_attentions=True,
                                           num_labels=num_labels, finetuning_task=args.task_name)
     tokenizer = tokenizer_class.from_pretrained(args.tokenizer_name if args.tokenizer_name else args.model_name_or_path,
                                                 do_lower_case=args.do_lower_case)
