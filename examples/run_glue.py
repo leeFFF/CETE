@@ -234,12 +234,18 @@ def evaluate(args, model, tokenizer, prefix=""):
                           # XLM and RoBERTa don't use segment_ids
                           'labels': batch[3]}
                 outputs = model(**inputs)
+                print('*'*200)
+                print(outputs)
+                print(len(outputs)
+                      
                 tmp_eval_loss, logits = outputs[:2]
 
                 eval_loss += tmp_eval_loss.mean().item()
             nb_eval_steps += 1
             
-            val_attention = outputs.attentions[-1]
+            print('add attention')
+            val_attention = outputs[2][-1]
+            # print()
             if preds is None:
                 preds = logits.detach().cpu().numpy()
                 out_label_ids = inputs['labels'].detach().cpu().numpy()
