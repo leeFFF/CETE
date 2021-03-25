@@ -236,7 +236,7 @@ def evaluate(args, model, tokenizer, prefix=""):
                 outputs = model(**inputs)
                 print('*'*200)
                 print(outputs)
-                print(len(outputs)
+                print(len(outputs))
                       
                 tmp_eval_loss, logits = outputs[:2]
 
